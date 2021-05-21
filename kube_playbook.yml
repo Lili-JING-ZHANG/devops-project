@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: yes
+ 
+  tasks:
+      
+    - name: download file
+      get_url:
+        url: http://www.cloud.rennes.enst-bretagne.fr/files/docker-lab/root-ca.crt
+        dest: /home/ubuntu
+        
+      environment:
+        https_proxy: https://proxy.rennes.enst-bretagne.fr:3128
+        http_proxy: http://proxy.rennes.enst-bretagne.fr:3128
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: /home/ubuntu/root-ca.crt
+        dest: /usr/local/share/ca-certificates
+        remote_src: yes
+        
+    - name: Update ca-certificates
+      shell: sudo update-ca-certificates
+    - name: Unconditionally reboot the machine with all defaults
+      reboot:
+
+

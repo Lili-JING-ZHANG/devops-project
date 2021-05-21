@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-webserver-deployment
+  labels:
+    app: webserver
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: test-webserver
+        image: gitlab-devops.cloud.rennes.enst-bretagne.fr:4567/theuser/theproject/k8s_test
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: regcred
