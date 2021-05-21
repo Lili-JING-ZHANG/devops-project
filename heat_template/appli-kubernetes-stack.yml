@@ -1,0 +1,117 @@
+heat_template_version: rocky
+
+description: Example template with six VMs hosts
+
+parameters:
+  ssh_keys:
+    type: comma_delimited_list
+
+resources:
+
+  master1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ ssh_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.10.4 
+
+  master1:
+    type: vm-template.yaml
+    properties:
+      name: master1
+      flavor: s10.medium 
+      network_port: { get_resource: master1_port}
+      ssh_keys: {get_param: ssh_keys}
+      
+  
+  master2_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ ssh_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.10.5 
+
+  master2:
+    type: vm-template.yaml
+    properties:
+      name: master2
+      flavor: s10.medium 
+      network_port: { get_resource: master2_port}
+      ssh_keys: {get_param: ssh_keys}
+      
+  
+  master3_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ ssh_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.10.6 
+
+  master3:
+    type: vm-template.yaml
+    properties:
+      name: master3
+      flavor: s10.medium 
+      network_port: { get_resource: master3_port}
+      ssh_keys: {get_param: ssh_keys}
+      
+      
+  worker1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ ssh_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.10.7 
+
+  worker1:
+    type: vm-template.yaml
+    properties:
+      name: worker1
+      flavor: s10.medium 
+      network_port: { get_resource: worker1_port}
+      ssh_keys: {get_param: ssh_keys}
+      
+      
+  worker2_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ ssh_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.10.8 
+
+  worker2:
+    type: vm-template.yaml
+    properties:
+      name: worker2
+      flavor: s10.medium 
+      network_port: { get_resource: worker2_port}
+      ssh_keys: {get_param: ssh_keys}
+      
+      
+  worker3_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ ssh_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.10.9 
+
+  worker3:
+    type: vm-template.yaml
+    properties:
+      name: worker3
+      flavor: s10.medium 
+      network_port: { get_resource: worker3_port}
+      ssh_keys: {get_param: ssh_keys}
+

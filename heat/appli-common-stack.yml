@@ -1,0 +1,76 @@
+heat_template_version: rocky
+
+description: this subnet contains subnetwork,bastion and security group for kubernetes and openstack
+
+parameters:
+  ssh_keys:
+    type: comma_delimited_list
+  ports:
+    type: comma_delimited_list
+    label: ports
+    default: "80,643,8080"
+
+resources:
+  ssh_openstack_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: "ssh_openstack_security_group"
+      name: ssh_openstack_security_group
+      rules:
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 80
+          port_range_max: 80
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8080
+          port_range_max: 8080
+  
+  internal_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: "Open all the ports inside the private network"
+      name: internal_security_group
+      rules:
+        - remote_ip_prefix: 192.168.10.0/24
+          direction: ingress
+          
+  private_net:
+    type: OS::Neutron::Net
+    properties:
+      name: "private_net"
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: private_net }
+      cidr: "192.168.10.0/24"
+      dns_nameservers: [ "192.44.75.10" ]
+      ip_version: 4
+      allocation_pools:
+        - start: "192.168.10.200"
+          end: "192.168.10.254"
+      name: "private_subnet"
+  
+  bastion_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net}
+      security_groups: [ get_resource: ssh_openstack_security_group,  get_resource: internal_security_group]
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet}
+          ip_address: 192.168.10.3
+ 
+  bastion_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: external
+      port_id: { get_resource: bastion_port }
+  
+  bastion:
+    type: vm-template.yaml
+    properties:
+      name: bastion
+      flavor: m1.small
+      network_port: { get_resource: bastion_port}
+      ssh_keys: {get_param: ssh_keys}

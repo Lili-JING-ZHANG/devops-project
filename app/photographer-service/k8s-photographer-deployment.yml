@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: photographer-deployment
+  labels:
+    app: photographer-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: photographer-service
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: test-webserver
+        image: gitlab-devops.cloud.rennes.enst-bretagne.fr:4567/d20silue/202102_devops-s21-01/photographer:latest
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: regcred

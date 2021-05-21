@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: photographer
+spec:
+  containers:
+  - name: photographer
+    image: gitlab-devops.cloud.rennes.enst-bretagne.fr:4567/d20silue/202102_devops-s21-01/photographer:latest
+    ports:
+    - containerPort: 8000
+  imagePullSecrets:
+  - name: regcred
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: photographer
+  labels:
+    app: photographer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: photographer
+  template:
+    metadata:
+      labels:
+        app: photographer
+    spec:
+      containers:
+      - name: test-photographer
+        image: gitlab-devops.cloud.rennes.enst-bretagne.fr:4567/d20silue/202102_devops-s21-01/photographer:latest
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: regcred
+      
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: photographer-service
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+  selector:
+    app: photographer-service

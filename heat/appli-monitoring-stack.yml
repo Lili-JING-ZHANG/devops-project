@@ -1,0 +1,28 @@
+heat_template_version: rocky
+
+description: One template for the monitoring VM, which must be unreachable from the outside but must be able to communicate on all TCP/UDP port with all the other VMs of your group.
+
+resources:
+
+  m_internal_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: "Open all the ports inside the private network"
+      name: m_internal_security_group
+      rules:
+        - remote_ip_prefix: 192.168.10.0/24
+          direction: ingress
+  
+  m_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net}
+      security_groups: [ get_resource: m_internal_security_group]
+             
+          
+  m_bastion:
+    type: vm-template.yaml
+    properties:
+      name: m_bastion
+      flavor: s10.medium
+      network_port: { get_resource: m_port}
