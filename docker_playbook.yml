@@ -1,0 +1,50 @@
+---
+- hosts: all
+  become: yes
+ 
+  tasks:
+    
+        
+    - name: Add keys
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      environment:
+        https_proxy: https://proxy.rennes.enst-bretagne.fr:3128
+        http_proxy: http://proxy.rennes.enst-bretagne.fr:3128
+        
+    - name: add a repository
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+        
+      environment:
+        https_proxy: https://proxy.rennes.enst-bretagne.fr:3128
+        http_proxy: http://proxy.rennes.enst-bretagne.fr:3128
+        
+    - name: install
+      apt:
+         
+        update_cache: yes
+    
+    - name: install real
+      apt:
+        
+        pkg: 
+        - docker-ce 
+        - docker-ce-cli 
+        - containerd.io
+    
+    
+      
+    - name: modify selinux to disabled
+      ansible.builtin.lineinfile: 
+        path: /lib/systemd/system/docker.service 
+        insertbefore: '[Install]'
+        line: 'Environment="HTTP_PROXY=http://proxy.rennes.enst-bretagne.fr:3128" "HTTPS_PROXY=http://proxy.rennes.enst-bretagne.fr:3128" "NO_PROXY=gitlab-devops.cloud.rennes.enst-bretagne.fr:4567"'
+    - name: restart
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+      

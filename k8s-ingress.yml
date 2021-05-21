@@ -1,0 +1,34 @@
+---
+apiVersion: networking.k8s.io/v1beta1 
+kind: Ingress
+metadata:
+  name: web
+  
+spec:
+  rules:
+  - host: photo.example.com 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: web-service
+          servicePort: 80
+
+---
+apiVersion: networking.k8s.io/v1beta1 
+kind: Ingress
+metadata:
+  name: api
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "*"
+spec:
+  rules:
+  - host: api.example.com 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: backend-service
+          servicePort: 80

@@ -1,0 +1,58 @@
+stages:
+  - test
+  - release
+  - deploy
+  
+test_photographer:
+  stage: test
+  image: $CI_REGISTRY/$CI_PROJECT_PATH/photoapptest
+  script:
+  - cd app/photographer-service
+  - pytest -v -p no:warnings
+  services:
+    - name: mongo
+      alias: mongo-service-test
+    
+build_photographer:
+  stage: release
+  image: $CI_REGISTRY/devops/shared/docker:proxy
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY 
+    - cd app/photographer-service
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH/photographer:${CI_COMMIT_SHORT_SHA} --network=host .
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH/photographer:${CI_COMMIT_SHORT_SHA}
+
+
+build_backend_service:
+  stage: release
+  image: $CI_REGISTRY/devops/shared/docker:proxy
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY 
+    - cd backend-service
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH/backend-service:${CI_COMMIT_SHORT_SHA} --network=host .
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH/backend-service:${CI_COMMIT_SHORT_SHA}    
+
+deploy_photographer:
+  stage: deploy
+  image:
+    name: bitnami/kubectl
+    entrypoint: [""]
+  script:
+    - cd app/photographer-service
+    - sed -i "s/:latest/:${CI_COMMIT_SHORT_SHA}/g" k8s-photographer.yml
+    - kubectl apply -f k8s-photographer.yml
+  environment:
+    name: production
+
+deploy_photo_service:
+  stage: deploy
+  image: 
+    name: bitnami/kubectl
+    entrypoint: [""]
+  script:
+    - cd app/photo-service
+    
+    - kubectl apply -f k8s-web-frontend.yml
+  environment:
+    name: production   
+  
